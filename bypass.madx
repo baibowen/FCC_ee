@@ -20,13 +20,113 @@ dogleg: line = (
                
 chicane: line = ( 
          D1, 
-         Q11, D2, Q12, D3, 
+         Q11, D2, Q12, D3,  //first doublet
          B1, 
          Drift1, //Drift1 = D4 + D21 + D5 + D22 + D6 + D23 + D7
          B2,
-         Drift21, Quad21, Drift22, 
+         Drift21, Quad21, Drift22, Quad22, Drift23, Quad23, Drift24, // first triplet
          B3,
          Drift1,
          B4,
-         
-         
+         D3, Q12, D2, Q11,
+         D1
+                );
+
+Beam, particle = electron, energy = e0, ex = emit_x, ey = emit_y, sigt = , npart = ;
+
+if (flag == 1) { 
+
+   use, sequence = dogleg;
+
+   betx0 = ;
+   bety0 = ;
+   alfx0 = ;
+   alfy0 = ;
+   
+   select, flag = twiss, column = name, s, betx, bety, alfx, alfy, mux, muy, dx, dpx, dy, dpy;
+   twiss, betx = betx0, bety = bety0, alfx = alfx0, alfy = alfy0, dx = dx0, dpx = dpx0, dy = dy0, dpy = dpy0;
+   
+   
+   match, sequence = dogleg, betx = betx0, bety =bety0, alfx = alfx0, alfy =alfy0;
+   constraint, sequence = dogleg, range = #s/#e, betx < , bety < ;
+   constraint, sequence = dogleg,  range = #e,   betx = , bety = ;
+   
+   vary, name = Q11->k1, step = 1e-8, lower = -18.0, upper = 18.0;
+   vary, name = Q12->k2, step = 1e-8, lower = -18.0, upper = 18.0;
+   vary, name = Q21->k3, step = 1e-8, lower = -18.0, upper = 18.0;
+   vary, name = Q22->k4, step = 1e-8, lower = -18.0, upper = 18.0;
+   vary, name = Q23->k5, step = 1e-8, lower = -18.0, upper = 18.0;
+   vary, name = Q31->k6, step = 1e-8, lower = -18.0, upper = 18.0;
+   vary, name = Q32->k7, step = 1e-8, lower = -18.0, upper = 18.0;
+   
+   lmdif, calls = 100000, tolerance = 1e-26;
+   endmatch;
+   
+   value, Q11->k1;
+   value, Q12->k2;
+   value, Q21->k3;
+   value, Q22->k4;
+   value, Q23->k5;
+   value, Q31->k6;
+   value, Q32->k7;
+   
+   //select, flag = twiss, clear = true;
+   //twiss, save, file = "twiss_bypass.tfs", betx = betx0, bety = bety0, alfx = alfx0, alfy = alfy0, dx = dx0, dpx = dpx0, dy = dy0, dpy = dpy0;
+   
+   select, flag = twiss, column = name, s, betx, bety, alfx, alfy, mux, muy, dx, dpx, dy, dpy;
+   //select, flag = twiss, full;
+   twiss, save, file = "twiss_bypass.dat";
+   plot, haxis = s, vaxis1 = betx, bety, vaxis2 = dx, dpx, colour = 100, file = "twiss_bypass";
+   
+   select, flag = survey, column = name, s, x, y, z;  
+   survey, file = "survey_bypass.dat";
+   
+elseif ( flag == 2 ) {
+
+   use, sequence = chicane;
+
+   betx0 = ;
+   bety0 = ;
+   alfx0 = ;
+   alfy0 = ;
+   
+   select, flag = twiss, column = name, s, betx, bety, alfx, alfy, mux, muy, dx, dpx, dy, dpy;
+   twiss, betx = betx0, bety = bety0, alfx = alfx0, alfy = alfy0, dx = dx0, dpx = dpx0, dy = dy0, dpy = dpy0;
+   
+   
+   match, sequence = dogleg, betx = betx0, bety =bety0, alfx = alfx0, alfy =alfy0;
+   constraint, sequence = dogleg, range = #s/#e, betx < , bety < ;
+   constraint, sequence = dogleg,  range = #e,   betx = , bety = ;
+   
+   vary, name =   Q11->k1,  step = 1e-8, lower = -18.0, upper = 18.0;
+   vary, name =   Q12->k2,  step = 1e-8, lower = -18.0, upper = 18.0;
+   vary, name = Quad21->k3, step = 1e-8, lower = -18.0, upper = 18.0;
+   vary, name = Quad22->k4, step = 1e-8, lower = -18.0, upper = 18.0;
+   vary, name = Quad23->k5, step = 1e-8, lower = -18.0, upper = 18.0;
+   vary, name =   Q12->k2,  step = 1e-8, lower = -18.0, upper = 18.0;
+   vary, name =   Q11->k1,  step = 1e-8, lower = -18.0, upper = 18.0;
+   
+   lmdif, calls = 100000, tolerance = 1e-26;
+   endmatch;
+   
+   value, Q11->k1;
+   value, Q12->k2;
+   value, Quad21->k3;
+   value, Quad22->k4;
+   value, Quad23->k5;
+   value, Q12->k2;
+   value, Q11->k1;
+   
+   //select, flag = twiss, clear = true;
+   //twiss, save, file = "twiss_bypass.tfs", betx = betx0, bety = bety0, alfx = alfx0, alfy = alfy0, dx = dx0, dpx = dpx0, dy = dy0, dpy = dpy0;
+   
+   select, flag = twiss, column = name, s, betx, bety, alfx, alfy, mux, muy, dx, dpx, dy, dpy;
+   //select, flag = twiss, full;
+   twiss, save, file = "twiss_bypass.dat";
+   plot, haxis = s, vaxis1 = betx, bety, vaxis2 = dx, dpx, colour = 100, file = "twiss_bypass";
+   
+   select, flag = survey, column = name, s, x, y, z;  
+   survey, file = "survey_bypass.dat";
+   
+   
+   
