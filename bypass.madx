@@ -1,0 +1,32 @@
+title "Injector Bypass";
+
+option, -echo, warn, info;
+
+// 1 -> dogleg, 2 -> chicane
+flag = 1;
+// flag = 2;
+
+call file = "parameter.madx";
+
+dogleg: line = (
+        D1, 
+        Q11, D2, Q12, D3,  //first doublet 
+        B1, 
+        D4, Q21, D5, Q22, D6, Q23, D7,  //first triplet
+        B2, 
+        D8, Q31, D9, Q32,  //second doublet
+        D10
+               );
+               
+chicane: line = ( 
+         D1, 
+         Q11, D2, Q12, D3, 
+         B1, 
+         Drift1, //Drift1 = D4 + D21 + D5 + D22 + D6 + D23 + D7
+         B2,
+         Drift21, Quad21, Drift22, 
+         B3,
+         Drift1,
+         B4,
+         
+         
