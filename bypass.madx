@@ -25,24 +25,24 @@ chicane: line = (
          D3, QD, D2, QF, D1 //second doublet
                 );
 
-Beam, particle = electron, energy = e0, ex = emit_x, ey = emit_y, sigt = , npart = ;
+Beam, particle = electron, energy = e0, ex = emit_x, ey = emit_y, sigt = sigma_z, npart = n_e;
 
 if (flag == 1) { 
 
    use, sequence = dogleg;
 
-   betx0 = ;
-   bety0 = ;
-   alfx0 = ;
-   alfy0 = ;
+   betx0 = 196;
+   bety0 = 25;
+   alfx0 = -145;
+   alfy0 = 14.55;
    
    select, flag = twiss, column = name, s, betx, bety, alfx, alfy, mux, muy, dx, dpx, dy, dpy;
    twiss, betx = betx0, bety = bety0, alfx = alfx0, alfy = alfy0, dx = dx0, dpx = dpx0, dy = dy0, dpy = dpy0;
    
    
    match, sequence = dogleg, betx = betx0, bety =bety0, alfx = alfx0, alfy =alfy0;
-   constraint, sequence = dogleg, range = #s/#e, betx < , bety < ;
-   constraint, sequence = dogleg,  range = #e,   betx = , bety = ;
+   constraint, sequence = dogleg, range = #s/#e, betx < 200, bety < 200;
+   constraint, sequence = dogleg,  range = #e,   betx = 35, bety = 25;
    
    vary, name = QF->k1, step = 1e-8, lower = -200.0, upper = 200.0;
    vary, name = QD->k2, step = 1e-8, lower = -200.0, upper = 200.0;
