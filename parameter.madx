@@ -3,7 +3,7 @@ e0 := 4.46; // GeV
 emit_x := 6.4e-9; // m.rad
 emit_y := 5.0e-9; // m.rad
 sigma_z := 2.4e-3; // m (8ps)
-n_e := 4.2e10; 
+n_e := 2.0e10; // 4.2e10 for 7nC
 
 
 //dogleg
