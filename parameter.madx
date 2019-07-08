@@ -1,9 +1,9 @@
-charge := ; // nC
-e0 := ; // GeV
-emit_x := ; // m.rad
-emit_y := ; // m.rad
-sigma_z := ; // m
-n_e := ; 
+charge := 3.2e-9; // 3.2nC
+e0 := 4.46; // GeV
+emit_x := 6.4e-9; // m.rad
+emit_y := 5.0e-9; // m.rad
+sigma_z := 2.4e-3; // m (8ps)
+n_e := 4.2e10; 
 
 
 //dogleg
