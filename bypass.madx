@@ -9,27 +9,20 @@ flag = 1;
 call file = "parameter.madx";
 
 dogleg: line = (
-        D1, 
-        Q11, D2, Q12, D3,  //first doublet 
+        D1, QF, D2, QD, D3, //first doublet 
         B1, 
-        D4, Q21, D5, Q22, D6, Q23, D7,  //first triplet
+        D4, Q1, D5,
         B2, 
-        D8, Q31, D9, Q32,  //second doublet
-        D10
+        D3, QD, D2, QF, D1 //second doublet
                );
                
 chicane: line = ( 
-         D1, 
-         Q11, D2, Q12, D3,  //first doublet
-         B1, 
-         Drift1, //Drift1 = D4 + D21 + D5 + D22 + D6 + D23 + D7
-         B2,
-         Drift21, Quad21, Drift22, Quad22, Drift23, Quad23, Drift24, // first triplet
-         B3,
-         Drift1,
-         B4,
-         D3, Q12, D2, Q11,
-         D1
+         D1, QF, D2, QD, D3, //first doublet
+         B1, L1, 
+         B2, L2
+         B2, L1,
+         B1,
+         D3, QD, D2, QF, D1 //second doublet
                 );
 
 Beam, particle = electron, energy = e0, ex = emit_x, ey = emit_y, sigt = , npart = ;
@@ -51,25 +44,17 @@ if (flag == 1) {
    constraint, sequence = dogleg, range = #s/#e, betx < , bety < ;
    constraint, sequence = dogleg,  range = #e,   betx = , bety = ;
    
-   vary, name = Q11->k1, step = 1e-8, lower = -18.0, upper = 18.0;
-   vary, name = Q12->k2, step = 1e-8, lower = -18.0, upper = 18.0;
-   vary, name = Q21->k3, step = 1e-8, lower = -18.0, upper = 18.0;
-   vary, name = Q22->k4, step = 1e-8, lower = -18.0, upper = 18.0;
-   vary, name = Q23->k5, step = 1e-8, lower = -18.0, upper = 18.0;
-   vary, name = Q31->k6, step = 1e-8, lower = -18.0, upper = 18.0;
-   vary, name = Q32->k7, step = 1e-8, lower = -18.0, upper = 18.0;
+   vary, name = QF->k1, step = 1e-8, lower = -200.0, upper = 200.0;
+   vary, name = QD->k2, step = 1e-8, lower = -200.0, upper = 200.0;
+   vary, name = Q1->k3, step = 1e-8, lower = -200.0, upper = 200.0;
    
    lmdif, calls = 100000, tolerance = 1e-26;
    endmatch;
    
-   value, Q11->k1;
-   value, Q12->k2;
-   value, Q21->k3;
-   value, Q22->k4;
-   value, Q23->k5;
-   value, Q31->k6;
-   value, Q32->k7;
-   
+   value, QF->k1;
+   value, QD->k2;
+   value, Q1->k3;
+
    //select, flag = twiss, clear = true;
    //twiss, save, file = "twiss_bypass.tfs", betx = betx0, bety = bety0, alfx = alfx0, alfy = alfy0, dx = dx0, dpx = dpx0, dy = dy0, dpy = dpy0;
    
@@ -81,6 +66,8 @@ if (flag == 1) {
    select, flag = survey, column = name, s, x, y, z;  
    survey, file = "survey_bypass.dat";
    
+ }
+ 
 elseif ( flag == 2 ) {
 
    use, sequence = chicane;
@@ -98,24 +85,14 @@ elseif ( flag == 2 ) {
    constraint, sequence = dogleg, range = #s/#e, betx < , bety < ;
    constraint, sequence = dogleg,  range = #e,   betx = , bety = ;
    
-   vary, name =   Q11->k1,  step = 1e-8, lower = -18.0, upper = 18.0;
-   vary, name =   Q12->k2,  step = 1e-8, lower = -18.0, upper = 18.0;
-   vary, name = Quad21->k3, step = 1e-8, lower = -18.0, upper = 18.0;
-   vary, name = Quad22->k4, step = 1e-8, lower = -18.0, upper = 18.0;
-   vary, name = Quad23->k5, step = 1e-8, lower = -18.0, upper = 18.0;
-   vary, name =   Q12->k2,  step = 1e-8, lower = -18.0, upper = 18.0;
-   vary, name =   Q11->k1,  step = 1e-8, lower = -18.0, upper = 18.0;
+   vary, name = QF->k1,  step = 1e-8, lower = -200.0, upper = 200.0;
+   vary, name = QD->k2,  step = 1e-8, lower = -200.0, upper = 200.0;
    
    lmdif, calls = 100000, tolerance = 1e-26;
    endmatch;
    
-   value, Q11->k1;
-   value, Q12->k2;
-   value, Quad21->k3;
-   value, Quad22->k4;
-   value, Quad23->k5;
-   value, Q12->k2;
-   value, Q11->k1;
+   value, QF->k1;
+   value, QD->k2;
    
    //select, flag = twiss, clear = true;
    //twiss, save, file = "twiss_bypass.tfs", betx = betx0, bety = bety0, alfx = alfx0, alfy = alfy0, dx = dx0, dpx = dpx0, dy = dy0, dpy = dpy0;
@@ -127,6 +104,6 @@ elseif ( flag == 2 ) {
    
    select, flag = survey, column = name, s, x, y, z;  
    survey, file = "survey_bypass.dat";
-   
+ }
    
    
