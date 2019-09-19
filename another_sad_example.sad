@@ -6,7 +6,7 @@
 !   /SAD/doc/design_example.sad.result
 !
 MOMENTUM= 1 GEV;
-ON ECHO;OFF CTIME;
+ON ECHO;ON CTIME;
 !
 ! ***** DEFINITION OF ELEMENTS IN MAIN LEVEL *****
 ! 
