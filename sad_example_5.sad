@@ -1,0 +1,216 @@
+!
+! This is an example for SAD School 2015
+!
+! Always begin with the MAIN level; you can define elements such as DRIFT, BEND, QUAD, etc., and beam lines by LINE.
+!  
+ OFF CTIME;ON ECHO; ! Flags ECHO: echo back the MAIN level input. CTIME cputime at each MAIN level command.
+;
+AAA =0.3;
+BBB="aaa";
+
+
+!
+DRIFT LX03 = ( L =AAA )
+      LXSF = ( L =0.5 )
+      LM6 = (L=2)
+      LM4 = (L=2)
+      LM3 = (L=2)
+      LM2 = (L=1)
+      LRF = (L=1.5)
+      LXX1 = (L=1)
+      LXX2=(L=2)
+;
+BEND B1 = (L=2 ANGLE = PI/2 /20)
+;
+QUAD QF=(L=0.5-AAA K1 = 0.1)
+     QD = (L=0.2 K1 = -0.1)
+     QM6=(L=0.2 k1=0.8)
+     QM5=(L=0.2 k1=-0.8)
+     QM4=(L=0.2 k1=0.5)
+     QM3=(L=0.2 k1=-0.5)
+     QM2=(L=0.2 k1=0.5)
+     QM1=(L=0.2 k1=-0.5)
+     QM4A=(L=0.2 k1=0.5)
+     QM3A=(L=0.2 k1=-0.5)
+     QM2A=(L=0.2 k1=0.5)
+     QKF=(L=0.2 k1=0.5)
+     QKD=(L=0.2 k1=-0.5)
+;
+CAVI CA1 = (FREQ=500e6)
+;
+;
+COORD 
+  CROT1 = (CHI3 = PI/4)
+  CROT2 = (CHI3 = -PI/4)
+;
+MARK P1=()
+  P2=()
+  P3=()
+  PX=()
+  PEND=()
+  PRF=()
+;
+LINE CELL1 = (P1 QF LXSF B1 LX03 QD LX03 B1 LXSF)
+     DSUPP = (P1 QM6 LM6 QM5 LX03 B1 LX03 QM4 LM4 QM3 LM3 QM2 LM2 P2)  
+     DSUPPA = (P1 QM6 LM6 QM5 LX03 B1 LX03 QM4A LM4 QM3A LM3 QM2A LM2 P2)  
+     XCHG1 = (P3 LXX1 QKF 2*LXX1 QKD LXX1  )
+;
+FFS; ! enters the "FFS" level for optics calculation, matching, scripting, etc.
+!
+1+2
+
+!
+!
+MOMENTUM=3e9;
+CONVERGENCE=1e-20;
+Brho:=MOMENTUM/SpeedOfLight;
+!
+use CELL1;
+!
+cell;
+!
+fit nx 0.375 ny 0.125;
+free q*;
+go;
+end
+
+var
+show
+dr:=FFS["draw bx by & ex ey q*;"];
+dr;
+
+end
+
+FitFunction:=Module[
+  {e=Emittance[]},
+  {(Emittances/.e)[[1]]/emit0-1}];
+
+emit0=1e-9;
+
+free b1 b1 l;
+
+go
+end
+
+larc:=LINE["S","$$$"]/LINE["GCHI1","$$$"]*2*Pi;
+
+c0=400;
+fit leng 10;
+FitValue["$$$","LENG",_,v_,x_]:=Module[{l=c0/(2 Pi)*LINE["ANGLE","B1"]*2},If[x<l,Null,l]];
+
+go
+
+emit;
+end
+
+nbend=Round[2*Pi/LINE["ANGLE","B1"]/40]*40+8;
+Element["ANGLE","B1"]=2*Pi/nbend;
+
+fit rej leng;
+FitFunction=.;
+Clear[FitValue];
+fix *;
+free q*;
+go;
+
+save;
+FitFunction=.;
+Clear[FitValue];
+
+use DSUPP;
+ins;
+fit ax 0 ay 0 ex 0 epx 0 bx 8;
+free qm* lm*;
+lm2 max 3;
+FitValue["$$$","BX",__]:=Twiss["BY","$$$"];
+go;
+
+end
+
+Clear[FitValue];
+save;
+
+use DSUPPA;
+(Element["K1",#//"A"]=("K1"/.SetElement[#][[3]]))&/@{"QM2","QM3","QM4"};
+ins;cal;
+dnu0=Subtract@@Twiss[{"NX","NY"},"$$$"];
+dnu=0.03*2*Pi*Sign[dnu0]+dnu0;
+ins;
+fit ax 0 ay 0 nx 0.5;
+FitValue["$$$","NX",__]:=Twiss["NY","$$$"]+dnu;
+free qm*a;
+go;
+
+
+end
+
+Clear[FitValue];
+save;
+
+harc=BeamLine[(nbend-8)/16*ExtractBeamLine[CELL1], ExtractBeamLine[DSUPP]];
+qring=BeamLine[-Drop[harc, 2],harc];
+harca=BeamLine[(nbend-8)/16*ExtractBeamLine[CELL1], ExtractBeamLine[DSUPPA]];
+qringa=BeamLine[-Drop[harc, 2],harca];
+
+use XCHG1;
+CONVERGENCE=1e-20;
+cell;
+QK* rotate 0;
+fit nx 1/3 ny 1/6;
+free qk* go;
+save;
+
+xchg=BeamLine[PX, CROT1, 3*ExtractBeamLine[XCHG1], CROT2];
+
+use xchg;
+CR* CHI3 0;
+QK* ROTATE Pi/4;
+ins cal;
+
+end
+save;
+
+hring=BeamLine[qring, PRF, CA1, -qring,xchg];
+hringa=BeamLine[qringa, PRF, CA1, -qringa,xchg];
+use ring=BeamLine[hring,hringa,PEND];
+
+qk* rotate 45*Degree;
+cell cal
+save;
+
+lsf=0.2;
+p=LINE["POSITION","LXSF.*"];
+p4=Partition[p,Length[p]/4];
+SetElement["SF","SEXT",{"L"->lsf}];
+SetElement["LXSF1","DRIFT",{"L"->(Element["L","LXSF"]-lsf)/2}];
+bsf=BeamLine[LXSF1,SF,LXSF1];
+!ps=Flatten[Table[{#[[k]],#[[k+8]]},{k,1,Length[#],10}]]&/@p4;
+ps=Flatten[Table[{#[[k]],#[[k+2]]},{k,1,Length[#],4}]]&/@p4;
+rings=ring;
+(rings[[#]]=bsf)&/@Flatten[ps];
+
+use rings;
+ringsm=rings;
+ps=Partition[LINE["POSITION","SF.*"],2];
+nsfam=Length[ps];
+Do[SetElement["SF"//k,"SEXT",{"L"->lsf}],{k,nsfam}];
+k=1;
+Scan[((ringsm[[#]]="SF"//k)&/@#;k++)&,ps];
+
+use rings;
+cell cal;
+save;
+
+DP=0.004;
+fit pend nx @ 8 ny @ 8 ;
+fit prf bx @ 8 ax @ 8 by @ 8 ay @ 8;
+free sf* go;
+
+ca1 volt 300e3;
+rfsw;
+emit
+
+NPARA=4;
+da:=DynamicApertureSurvey[{{0,50},{0,50},Range[-10,10]*2},1000,Output->6]
+
+end
