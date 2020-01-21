@@ -1,3 +1,3 @@
 # FCC_ee
-FCCee final injector bypass design
-password: my lal e-mail
+FCCee final injector bypass design.
+Password: my lal e-mail
